@@ -1,31 +1,32 @@
 "use client";
 
-import { DemexCard } from "@/components/demex-card";
-import { ThreeStateToggle } from "@/components/three-state-toggle";
-import CustomConnectButton from "@/components/ui/CustomConnectButton";
-import { UserButton } from "@clerk/nextjs";
-import Head from "next/head";
-import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
-import WalletConnectModal from "./components/modal/WalletConnectModal";
+import { DemexCard } from '@/components/demex-card';
+import { ThreeStateToggle } from '@/components/three-state-toggle';
+import CustomConnectButton from '@/components/ui/CustomConnectButton';
+import { UserButton } from '@clerk/nextjs';
+import Head from 'next/head';
+import { useEffect, useState } from 'react';
+import WalletConnectModal from './components/modal/WalletConnectModal';
+import { useAccount } from 'wagmi';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("Live");
-  const [isModalOpen, setModalOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('Live');
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const { isConnected } = useAccount();
-  const idoData = [
-    { id: 1, status: "live" },
-    { id: 2, status: "upcoming" },
-    { id: 3, status: "past" },
-    { id: 4, status: "live" },
-  ];
 
-  const filteredIdoData = idoData.filter(
-    (item) => item.status.toLowerCase() === activeTab.toLowerCase()
+  const idoData = [
+    { id: 1, status: 'live' },
+    { id: 2, status: 'upcoming' },
+    { id: 3, status: 'past' },
+    { id: 4, status: 'live' },
+  ]
+
+  const filteredIdoData = idoData.filter(item => 
+    item.status.toLowerCase() === activeTab.toLowerCase()
   );
 
   useEffect(() => {
-    setModalOpen(!isConnected);
+    setIsModalOpen(!isConnected);
   }, [isConnected]);
 
   return (
@@ -40,15 +41,12 @@ export default function Home() {
           <UserButton />
         </div>
       </div>
-      <main className="container mx-auto px-6 py-12 max-w-7xl">
-        <h1 className="text-5xl font-bold text-white mb-12 text-center">
-          KryptonPad
-        </h1>
 
+      <main className="container mx-auto px-6 py-12 max-w-7xl">
+        <h1 className="text-5xl font-bold text-white mb-12 text-center">KryptonPad</h1>
+        
         <section className="mb-12">
-          <h2 className="text-3xl font-semibold text-white mb-6 text-center">
-            IDO
-          </h2>
+          <h2 className="text-3xl font-semibold text-white mb-6 text-center">IDO</h2>
           <div className="max-w-md mx-auto">
             <ThreeStateToggle onChange={(newState) => setActiveTab(newState)} />
           </div>
@@ -62,5 +60,5 @@ export default function Home() {
       </main>
       <WalletConnectModal isOpen={isModalOpen} />
     </div>
-  );
+  )
 }
