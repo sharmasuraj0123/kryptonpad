@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState } from 'react';
 
 type ToggleState = 'live' | 'upcoming' | 'past'
 
