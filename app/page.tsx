@@ -1,12 +1,12 @@
 "use client";
 
 import { DemexCard } from '@/components/demex-card';
+import WalletConnectModal from '@/components/modal/WalletConnectModal';
 import { ThreeStateToggle } from '@/components/three-state-toggle';
 import CustomConnectButton from '@/components/ui/CustomConnectButton';
 import { UserButton } from '@clerk/nextjs';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
-import WalletConnectModal from './components/modal/WalletConnectModal';
 import { useAccount } from 'wagmi';
 
 export default function Home() {
