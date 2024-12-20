@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import WalletProvider from "./WalletProvider";
+import Script from "next/script";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,6 +34,7 @@ export default function RootLayout({
         >
           <WalletProvider>{children}</WalletProvider>
         </body>
+        <Script src="https://zealy.io/embed.js" strategy="lazyOnload" />
       </html>
     </ClerkProvider>
   );

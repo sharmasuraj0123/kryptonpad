@@ -5,8 +5,8 @@ import { Card } from "@/components/ui/card"
 
 export function DemexCard({ status }: { status: string }) {
   return (
-    <Card className="w-full max-w-[360px] h-[380px] relative bg-white bg-opacity-5 border border-white border-opacity-10 shadow-lg rounded-[24px] overflow-hidden backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl mx-auto">
-      <div className="absolute w-full h-[120px] left-0 top-0 bg-gradient-to-br from-[#2D313C] to-[#1D1F26] rounded-t-[24px] overflow-hidden">
+    <Card className="w-full max-w-[460px] h-[580px] relative bg-white bg-opacity-5 border border-white border-opacity-10 shadow-lg rounded-[24px] overflow-hidden backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl mx-auto">
+      {/* <div className="absolute w-full h-[120px] left-0 top-0 bg-gradient-to-br from-[#2D313C] to-[#1D1F26] rounded-t-[24px] overflow-hidden">
         <img src="https://via.placeholder.com/360x120.png?text=Demex+Header" alt="Demex header" className="w-full h-full object-cover opacity-50" />
       </div>
       <div className="absolute w-[90px] h-[90px] left-[20px] top-[75px] bg-gradient-to-br from-[#2D313C] to-[#1D1F26] rounded-full border-4 border-white border-opacity-20 overflow-hidden shadow-md">
@@ -41,7 +41,14 @@ export function DemexCard({ status }: { status: string }) {
             <span className="font-inter font-bold text-[14px] text-white">{item.value}</span>
           </div>
         ))}
-      </div>
+      </div> */}
+      <div
+        data-zealy-community="kryptonpadcommunity"
+        data-variant="inline"
+        data-theme="dark"
+        data-color="#a71873"
+        data-quest-id="600e3900-c6e4-4061-a6b1-158e04d7b970"
+      />
     </Card>
   )
 }
