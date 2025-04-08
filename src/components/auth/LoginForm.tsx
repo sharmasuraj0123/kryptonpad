@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase-browser'
+import Link from 'next/link'
 
 export default function LoginForm() {
   const router = useRouter()
@@ -127,9 +128,9 @@ export default function LoginForm() {
           </div>
           
           <div className="text-sm">
-            <a href="/forgot-password" className="text-blue-600 hover:text-blue-800 dark:text-blue-400">
+            <Link href="/forgot-password" className="text-blue-600 hover:text-blue-800 dark:text-blue-400">
               Forgot your password?
-            </a>
+            </Link>
           </div>
         </div>
         
@@ -144,10 +145,10 @@ export default function LoginForm() {
       
       <div className="mt-4 text-center">
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account?{' '}
-          <a href="/" className="text-blue-600 hover:text-blue-800 dark:text-blue-400">
+          Don&apos;t have an account?{' '}
+          <Link href="/" className="text-blue-600 hover:text-blue-800 dark:text-blue-400">
             Sign up
-          </a>
+          </Link>
         </p>
       </div>
     </div>

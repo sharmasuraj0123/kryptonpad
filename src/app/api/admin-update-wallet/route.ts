@@ -23,15 +23,15 @@ export async function POST(request: NextRequest) {
     const supabaseAdmin = createAdminClient();
     
     // Update the user's metadata with the wallet address using admin privileges
-    const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       userId,
       { user_metadata: { wallet_address: walletAddress } }
     );
 
-    if (error) {
-      console.error('Error updating user metadata:', error);
+    if (updateError) {
+      console.error('Error updating user metadata:', updateError);
       return NextResponse.json(
-        { error: 'Failed to update user metadata', details: error },
+        { error: 'Failed to update user metadata', details: updateError },
         { status: 500 }
       );
     }
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       message: `Wallet address updated for user ${userId}` 
     });
     
-  } catch (error: any) {
+  } catch (error: Error) {
     console.error('Error processing request:', error);
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
