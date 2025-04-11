@@ -61,8 +61,8 @@ export default function LoginForm() {
       }
 
       console.log('Login successful, redirecting to dashboard')
-      // Redirect to dashboard after login - using router.push instead of refresh
-      router.push('/dashboard')
+      // Redirect to dashboard after login
+      router.replace('/dashboard')
     } catch (err) {
       console.error('Login error:', err)
       setError('An unexpected error occurred. Please try again.')
@@ -72,18 +72,16 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800">
-      <h1 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-white">Log in to your account</h1>
-      
+    <div className="w-full max-w-md mx-auto p-6 bg-gray-900 rounded-xl shadow-lg">
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+        <div className="mb-6 p-3 bg-red-900/50 border border-red-500 text-red-200 rounded-lg">
           {error}
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
             Email
           </label>
           <input
@@ -92,13 +90,13 @@ export default function LoginForm() {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white"
             placeholder="your@email.com"
           />
         </div>
         
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
             Password
           </label>
           <input
@@ -107,7 +105,7 @@ export default function LoginForm() {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white"
             placeholder="Your password"
           />
         </div>
@@ -120,15 +118,15 @@ export default function LoginForm() {
               type="checkbox"
               checked={formData.rememberMe}
               onChange={handleChange}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-700 rounded bg-gray-800"
             />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
               Remember me
             </label>
           </div>
           
           <div className="text-sm">
-            <Link href="/forgot-password" className="text-blue-600 hover:text-blue-800 dark:text-blue-400">
+            <Link href="/forgot-password" className="text-purple-400 hover:text-purple-300">
               Forgot your password?
             </Link>
           </div>
@@ -137,20 +135,11 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
+          className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
         >
           {loading ? 'Logging in...' : 'Log in'}
         </button>
       </form>
-      
-      <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Don&apos;t have an account?{' '}
-          <Link href="/" className="text-blue-600 hover:text-blue-800 dark:text-blue-400">
-            Sign up
-          </Link>
-        </p>
-      </div>
     </div>
   )
 } 

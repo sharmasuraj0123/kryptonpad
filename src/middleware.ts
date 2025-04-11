@@ -55,6 +55,7 @@ export async function middleware(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/api/debug') &&
     !request.nextUrl.pathname.startsWith('/api/setup-db') &&
     !request.nextUrl.pathname.startsWith('/api/update-wallet-address') &&
+    !request.nextUrl.pathname.startsWith('/signup') &&
     request.nextUrl.pathname !== '/'
   ) {
     // no user, redirect to login page
@@ -64,6 +65,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is logged in but not verified, redirect to verification page
+  // Removing email verification check
+  /*
   if (
     user && 
     !user.email_confirmed_at && 
@@ -73,15 +76,16 @@ export async function middleware(request: NextRequest) {
     url.pathname = '/auth/verify'
     return NextResponse.redirect(url)
   }
+  */
 
   // If user is verified but has neither Twitter nor wallet connected, and not on setup pages
   if (
     user && 
-    user.email_confirmed_at && 
     !user.user_metadata?.twitter_username && 
     !user.user_metadata?.wallet_address && 
     !request.nextUrl.pathname.startsWith('/auth/twitter-link') && 
     !request.nextUrl.pathname.startsWith('/auth/wallet-connect') && 
+    !request.nextUrl.pathname.startsWith('/dashboard') && // Allow access to dashboard
     !request.nextUrl.pathname.startsWith('/api/') // Don't redirect API routes
   ) {
     const url = request.nextUrl.clone()

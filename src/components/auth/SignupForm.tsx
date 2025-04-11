@@ -66,8 +66,7 @@ export default function SignupForm() {
           data: {
             name: formData.name,
             country: formData.country,
-          },
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+          }
         }
       })
 
@@ -101,8 +100,8 @@ export default function SignupForm() {
         }
       }
 
-      // Move to step 2 - email verification
-      setFormStep(2)
+      // Redirect to Twitter linking instead of showing verification step
+      router.push('/auth/twitter-link')
     } catch (err) {
       console.error('Signup error:', err)
       setError('An unexpected error occurred. Please try again.')
@@ -122,7 +121,7 @@ export default function SignupForm() {
         type: 'signup',
         email: formData.email,
         options: {
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+          emailRedirectTo: new URL('/auth/callback', process.env.NEXT_PUBLIC_SITE_URL).toString()
         }
       })
       
