@@ -121,7 +121,7 @@ export default function WalletConnect() {
                   : 'No wallet connected'}
               </p>
               
-              <ThirdwebProvider activeChain={Sepolia} clientId="a32954d2274ff167331b829df4fd8e25">
+              <ThirdwebProvider activeChain={Sepolia} clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID}>
                 <WalletConnectButton 
                   onWalletAddressChange={handleWalletAddressChange}
                   buttonLabel={walletAddress ? "Change Wallet" : "Connect Wallet"}

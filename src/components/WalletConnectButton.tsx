@@ -1,13 +1,36 @@
 'use client';
 
-import { ConnectWallet } from "@thirdweb-dev/react";
+import { ConnectWallet, useAddress } from "@thirdweb-dev/react";
+import { useEffect } from "react";
 
-export default function WalletConnectButton() {
+interface WalletConnectButtonProps {
+  onWalletAddressChange?: (address: string | null) => void;
+  buttonLabel?: string;
+  className?: string;
+  userId?: string;
+}
+
+export default function WalletConnectButton({
+  onWalletAddressChange,
+  buttonLabel = "Connect Wallet",
+  className = "",
+  userId,
+}: WalletConnectButtonProps) {
+  const address = useAddress();
+
+  useEffect(() => {
+    if (onWalletAddressChange) {
+      onWalletAddressChange(address || null);
+    }
+  }, [address, onWalletAddressChange]);
+
   return (
-    <ConnectWallet 
-      theme="dark"
-      btnTitle="Connect Wallet"
-      modalTitle="Connect Your Wallet"
-    />
+    <div className={className}>
+      <ConnectWallet 
+        theme="dark"
+        btnTitle={buttonLabel}
+        modalTitle="Connect Your Wallet"
+      />
+    </div>
   );
 } 
