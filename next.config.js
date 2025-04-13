@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
+  images: {
+    domains: ['cyfznmdftbinxgcuqdjn.supabase.co'],
+  },
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if
