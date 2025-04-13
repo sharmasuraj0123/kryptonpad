@@ -30,8 +30,9 @@ export default function TwitterLink() {
           return
         }
         
-        // Check if Twitter is already linked
-        if (currentUser.user_metadata?.twitter_username) {
+        // Enhanced Twitter metadata check
+        const twitterMetadata = currentUser.user_metadata?.twitter_metadata
+        if (twitterMetadata?.twitter_id && twitterMetadata?.twitter_username) {
           router.push('/dashboard')
           return
         }
@@ -59,15 +60,22 @@ export default function TwitterLink() {
         provider: 'twitter',
         options: {
           redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-          scopes: 'tweet.read users.read',
+          scopes: 'tweet.read users.read offline.access',
         }
       })
       
       if (signInError) {
         setError(signInError.message)
         setLinkLoading(false)
+        return
       }
-      // The redirect happens automatically
+
+      // The redirect happens automatically, but we'll add error handling
+      if (!data.url) {
+        setError('Failed to get authorization URL')
+        setLinkLoading(false)
+        return
+      }
     } catch (err) {
       console.error('Twitter link error:', err)
       setError('Failed to start Twitter authentication. Please try again.')
