@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase-browser'
-import { ThirdwebProvider } from 'thirdweb/react'
-import { sepolia } from 'thirdweb/chains'
+import { ThirdwebProvider } from '@thirdweb-dev/react'
+import { Sepolia } from '@thirdweb-dev/chains'
 import WalletConnectButton from '@/components/WalletConnectButton'
 
 export default function WalletConnect() {
@@ -121,7 +121,7 @@ export default function WalletConnect() {
                   : 'No wallet connected'}
               </p>
               
-              <ThirdwebProvider>
+              <ThirdwebProvider activeChain={Sepolia} clientId="a32954d2274ff167331b829df4fd8e25">
                 <WalletConnectButton 
                   onWalletAddressChange={handleWalletAddressChange}
                   buttonLabel={walletAddress ? "Change Wallet" : "Connect Wallet"}
