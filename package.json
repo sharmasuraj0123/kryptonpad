@@ -13,6 +13,7 @@
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.4",
+    "@tanstack/react-query": "^4.36.1",
     "@thirdweb-dev/chains": "^0.1.75",
     "@thirdweb-dev/react": "^4.4.11",
     "@thirdweb-dev/sdk": "^4.0.38",
@@ -25,7 +26,8 @@
     "pino-pretty": "^10.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "supabase": "^2.20.5"
+    "supabase": "^2.20.5",
+    "thirdweb": "^5.94.1"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -40,22 +40,47 @@ export default function AuthCallback() {
           throw new Error('Twitter identity data not found')
         }
 
+        // Create Twitter metadata object
+        const twitterMetadata = {
+          twitter_id: twitterIdentity.identity_data.sub,
+          twitter_username: twitterIdentity.identity_data.preferred_username,
+          twitter_name: twitterIdentity.identity_data.name,
+          twitter_followers_count: twitterIdentity.identity_data.followers_count,
+          twitter_following_count: twitterIdentity.identity_data.following_count,
+          twitter_profile_image_url: twitterIdentity.identity_data.picture,
+        };
+
         // Update user metadata with Twitter information
         const { error: updateError } = await supabase.auth.updateUser({
           data: {
-            twitter_metadata: {
-              twitter_id: twitterIdentity.identity_data.sub,
-              twitter_username: twitterIdentity.identity_data.preferred_username,
-              twitter_name: twitterIdentity.identity_data.name,
-              twitter_followers_count: twitterIdentity.identity_data.followers_count,
-              twitter_following_count: twitterIdentity.identity_data.following_count,
-              twitter_profile_image_url: twitterIdentity.identity_data.picture,
-            }
+            twitter_metadata: twitterMetadata
           }
         })
 
         if (updateError) {
           throw new Error(updateError.message)
+        }
+
+        // Also update the profiles table with Twitter information
+        try {
+          const response = await fetch('/api/profile-twitter', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ twitterMetadata }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error updating profiles with Twitter data:', errorData);
+            // Continue even if profiles update fails - we don't want to block the user
+          } else {
+            console.log('Successfully updated profiles table with Twitter data');
+          }
+        } catch (profileError) {
+          console.error('Exception in profiles update:', profileError);
+          // Continue even if profiles update fails
         }
 
         // Redirect to dashboard on success

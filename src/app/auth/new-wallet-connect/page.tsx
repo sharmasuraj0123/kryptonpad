@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase-browser'
-import WalletConnectButton from '@/components/WalletConnectButton'
-import ThirdwebWrapper from '@/components/ThirdwebWrapper'
+import NewWalletConnect from '@/components/NewWalletConnect'
 
-export default function WalletConnect() {
+export default function NewWalletConnectPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -120,14 +119,12 @@ export default function WalletConnect() {
                   : 'No wallet connected'}
               </p>
               
-              <ThirdwebWrapper>
-                <WalletConnectButton 
-                  onWalletAddressChange={handleWalletAddressChange}
-                  buttonLabel={walletAddress ? "Change Wallet" : "Connect Wallet"}
-                  className="w-full"
-                  userId={user?.id}
-                />
-              </ThirdwebWrapper>
+              <NewWalletConnect 
+                onWalletAddressChange={handleWalletAddressChange}
+                buttonLabel={walletAddress ? "Change Wallet" : "Connect Wallet"}
+                className="w-full"
+                userId={user?.id}
+              />
             </div>
           </div>
           

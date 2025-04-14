@@ -1,10 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/utils/supabase';
+import { getAllCDOs } from '@/utils/supabase';
+import { useRouter } from 'next/navigation';
 
 interface Campaign {
   id: string;
+  name: string;
+  title: string;
+  description: string;
+  status: 'active' | 'ended' | 'upcoming';
+  startDate: string;
+  endDate: string;
+  community: string;
   project_name: string;
   token_symbol: string;
   token_price: string;
@@ -15,11 +23,14 @@ interface Campaign {
   allocation_start_date: string;
   allocation_end_date: string;
   project_website_link: string | null;
-  startdate: string;
-  enddate: string;
+  rewards?: {
+    type: string;
+    amount: number;
+  }[];
 }
 
 export default function CDOListings() {
+  const router = useRouter();
   const [cdos, setCdos] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,45 +41,57 @@ export default function CDOListings() {
   useEffect(() => {
     async function fetchCDOs() {
       try {
-        console.log('Starting to fetch CDOs...');
-        const { data, error } = await supabase
-          .from('Campaign')
-          .select('*')
-          .order('createdAt', { ascending: false });
+        console.log('Starting to fetch CDOs from database...');
+        const campaignData = await getAllCDOs();
+        console.log('Raw CDO data from database:', campaignData);
 
-        console.log('API Response:', { data, error });
+        // Transform database campaigns into the Campaign format if needed
+        const transformedCampaigns: Campaign[] = campaignData.map((campaign: any) => ({
+          id: campaign.id,
+          name: campaign.name || '',
+          title: campaign.title || campaign.name || '',
+          description: campaign.description || '',
+          status: campaign.status || 'active',
+          community: campaign.community || '',
+          project_name: campaign.project_name || campaign.name || '',
+          token_symbol: campaign.token_symbol || 'XO',
+          token_price: campaign.token_price || '0',
+          project_status: campaign.project_status || campaign.status || 'active',
+          blockchain_platform: campaign.blockchain_platform || 'Ethereum',
+          reg_start_date: campaign.reg_start_date || campaign.startDate || '',
+          reg_end_date: campaign.reg_end_date || campaign.endDate || '',
+          allocation_start_date: campaign.allocation_start_date || campaign.startDate || '',
+          allocation_end_date: campaign.allocation_end_date || campaign.endDate || '',
+          project_website_link: campaign.project_website_link || null,
+          startDate: campaign.startDate || campaign.reg_start_date || '',
+          endDate: campaign.endDate || campaign.reg_end_date || '',
+          rewards: campaign.rewards || []
+        }));
 
-        if (error) {
-          console.error('Error fetching CDOs:', error);
-          setError(error.message);
-          return;
+        console.log('Transformed campaigns from database:', transformedCampaigns);
+        setCdos(transformedCampaigns);
+        setError(null);
+      } catch (err: any) {
+        console.error('Error fetching campaigns from database:', err);
+        if (err.message && err.message.includes('Authentication required')) {
+          router.push('/login');
+        } else {
+          setError(err.message || 'Failed to fetch campaigns from database');
         }
-
-        if (!data) {
-          console.log('No data returned from query');
-          setCdos([]);
-          return;
-        }
-
-        console.log('CDOs fetched successfully:', data);
-        setCdos(data);
-      } catch (err) {
-        console.error('Unexpected error:', err);
-        setError('An unexpected error occurred');
       } finally {
         setLoading(false);
       }
     }
 
     fetchCDOs();
-  }, []);
+  }, [router]);
 
   const filterCDOs = () => {
     const now = new Date();
     
     return cdos.filter(cdo => {
-      const startDate = new Date(cdo.startdate);
-      const endDate = new Date(cdo.enddate);
+      const startDate = new Date(cdo.startDate);
+      const endDate = new Date(cdo.endDate);
       
       if (activeTab === 'Ongoing') {
         return startDate <= now && endDate >= now;
@@ -112,10 +135,15 @@ export default function CDOListings() {
 
   const filteredCDOs = filterCDOs();
 
-  // Create some placeholder data if no filtered CDOs
-  const placeholderCDOs = [
+  const placeholderCDOs: Campaign[] = [
     {
       id: '1',
+      name: 'Dogatoshi',
+      title: 'Dogatoshi',
+      description: 'A revolutionary meme coin project',
+      status: 'active',
+      community: 'Dogatoshi',
+      rewards: [],
       project_name: 'Dogatoshi',
       token_symbol: 'DOG',
       token_price: '200000',
@@ -126,11 +154,17 @@ export default function CDOListings() {
       allocation_start_date: '2024-12-05',
       allocation_end_date: '2024-12-10',
       project_website_link: 'https://example.com',
-      startdate: '2024-11-15',
-      enddate: '2024-12-31',
+      startDate: '2024-11-15',
+      endDate: '2024-12-31',
     },
     {
       id: '2',
+      name: 'xRaise',
+      title: 'xRaise',
+      description: 'Next-generation fundraising platform',
+      status: 'active',
+      community: 'XRaise',
+      rewards: [],
       project_name: 'xRaise',
       token_symbol: 'XR',
       token_price: '200000',
@@ -141,12 +175,24 @@ export default function CDOListings() {
       allocation_start_date: '2024-12-05',
       allocation_end_date: '2024-12-10',
       project_website_link: 'https://example.com',
-      startdate: '2024-11-15',
-      enddate: '2024-12-31',
+      startDate: '2024-11-15',
+      endDate: '2024-12-31',
     }
   ];
 
-  const displayCDOs = filteredCDOs.length > 0 ? filteredCDOs : placeholderCDOs;
+  const getDisplayCDOs = () => {
+    if (filteredCDOs.length > 0) {
+      return filteredCDOs;
+    }
+    
+    if (cdos.length > 0) {
+      return [];
+    }
+    
+    return placeholderCDOs;
+  };
+
+  const displayCDOs = getDisplayCDOs();
 
   return (
     <div className="w-full">
@@ -168,72 +214,83 @@ export default function CDOListings() {
       </div>
 
       {/* CDO Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {displayCDOs.map((cdo) => (
-          <div 
-            key={cdo.id} 
-            onClick={() => handleOpenModal(cdo)}
-            className="bg-gray-900 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
-          >
-            {/* Project Image/Header */}
-            <div className="relative h-40 w-full bg-gray-800 overflow-hidden">
-              {cdo.project_name === 'Dogatoshi' ? (
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-800 via-yellow-900 to-gray-900 opacity-80"></div>
-              ) : cdo.project_name === 'xRaise' ? (
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-blue-600 opacity-80"></div>
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-800 to-gray-900"></div>
-              )}
-            </div>
-            
-            {/* Content */}
-            <div className="p-4">
-              {/* Project name and logo */}
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-white">{cdo.project_name}</h2>
-                <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
-                  {cdo.project_name === 'Dogatoshi' ? (
-                    <div className="w-full h-full flex items-center justify-center bg-yellow-600 text-white font-bold">
-                      D
-                    </div>
-                  ) : cdo.project_name === 'xRaise' ? (
-                    <div className="w-full h-full flex items-center justify-center bg-blue-600 text-white font-bold">
-                      X
-                    </div>
-                  ) : (
-                    <span className="text-lg font-bold text-white">{cdo.token_symbol.charAt(0)}</span>
-                  )}
-                </div>
+      {displayCDOs.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {displayCDOs.map((cdo) => (
+            <div 
+              key={cdo.id} 
+              onClick={() => handleOpenModal(cdo)}
+              className="bg-gray-900 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
+            >
+              {/* Project Image/Header */}
+              <div className="relative h-40 w-full bg-gray-800 overflow-hidden">
+                {cdo.project_name === 'Dogatoshi' ? (
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-800 via-yellow-900 to-gray-900 opacity-80"></div>
+                ) : cdo.project_name === 'xRaise' ? (
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-blue-600 opacity-80"></div>
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-800 to-gray-900"></div>
+                )}
               </div>
               
-              {/* Status badge */}
-              <div className="inline-block bg-gray-800 text-white text-sm font-semibold px-4 py-1 rounded-full mb-4">
-                Upcoming
-              </div>
-              
-              {/* Information rows */}
-              <div className="space-y-3 text-white">
-                <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-                  <p className="text-sm text-gray-400">Total Raise</p>
-                  <p className="font-bold text-lg">${cdo.token_price}</p>
+              {/* Content */}
+              <div className="p-4">
+                {/* Project name and logo */}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-white">{cdo.project_name}</h2>
+                  <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
+                    {cdo.project_name === 'Dogatoshi' ? (
+                      <div className="w-full h-full flex items-center justify-center bg-yellow-600 text-white font-bold">
+                        D
+                      </div>
+                    ) : cdo.project_name === 'xRaise' ? (
+                      <div className="w-full h-full flex items-center justify-center bg-blue-600 text-white font-bold">
+                        X
+                      </div>
+                    ) : (
+                      <span className="text-lg font-bold text-white">{cdo.token_symbol.charAt(0)}</span>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-                  <p className="text-sm text-gray-400">Token Price</p>
-                  <p className="font-bold text-lg">${cdo.token_price}</p>
+                {/* Status badge */}
+                <div className="inline-block bg-gray-800 text-white text-sm font-semibold px-4 py-1 rounded-full mb-4">
+                  {cdo.status === 'active' ? 'Ongoing' : 
+                  cdo.status === 'upcoming' ? 'Upcoming' : 'Ended'}
                 </div>
                 
-                {/* End date */}
-                <div className="bg-gray-800 p-2 rounded text-center mt-4">
-                  <p className="font-medium">
-                    31- Dec-2024
-                  </p>
+                {/* Information rows */}
+                <div className="space-y-3 text-white">
+                  <div className="flex justify-between items-center border-b border-gray-800 pb-2">
+                    <p className="text-sm text-gray-400">Total Raise</p>
+                    <p className="font-bold text-lg">${parseInt(cdo.token_price).toLocaleString()}</p>
+                  </div>
+                  
+                  <div className="flex justify-between items-center border-b border-gray-800 pb-2">
+                    <p className="text-sm text-gray-400">Token Price</p>
+                    <p className="font-bold text-lg">${parseInt(cdo.token_price).toLocaleString()}</p>
+                  </div>
+                  
+                  {/* End date */}
+                  <div className="bg-gray-800 p-2 rounded text-center mt-4">
+                    <p className="font-medium">
+                      {new Date(cdo.endDate).toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-gray-900 rounded-lg p-8 text-center">
+          <p className="text-gray-400 text-lg">No {activeTab.toLowerCase()} campaigns available at this time.</p>
+        </div>
+      )}
 
       {/* Modal */}
       {showModal && selectedCDO && (
@@ -289,7 +346,7 @@ export default function CDOListings() {
                 <div className="bg-gray-800 p-3 rounded">
                   <p className="text-sm text-gray-400">Campaign Period</p>
                   <p className="font-medium">
-                    {new Date(selectedCDO.startdate).toLocaleDateString()} - {new Date(selectedCDO.enddate).toLocaleDateString()}
+                    {new Date(selectedCDO.startDate).toLocaleDateString()} - {new Date(selectedCDO.endDate).toLocaleDateString()}
                   </p>
                 </div>
                 

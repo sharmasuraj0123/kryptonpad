@@ -1,42 +1,60 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase-browser'
 
-export default function TwitterLink() {
+function TwitterLinkContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [linkLoading, setLinkLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
+    // Check for error parameter in URL
+    const errorParam = searchParams.get('error')
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam))
+    }
+    
     async function checkUserStatus() {
       const supabase = createClient()
       
       try {
+        console.log('Checking user authentication status')
         const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
         
-        if (userError || !currentUser) {
+        if (userError) {
+          console.error('Failed to get user information:', userError)
           setError('Failed to get user information. Please try logging in again.')
+          router.push('/login')
+          return
+        }
+        
+        if (!currentUser) {
+          console.log('No authenticated user found, redirecting to login')
           router.push('/login')
           return
         }
         
         // Check if email is confirmed
         if (!currentUser.email_confirmed_at) {
+          console.log('Email not verified, redirecting to verification page')
           router.push('/auth/verify')
           return
         }
         
         // Enhanced Twitter metadata check
-        const twitterMetadata = currentUser.user_metadata?.twitter_metadata
+        const twitterMetadata = currentUser.user_metadata
         if (twitterMetadata?.twitter_id && twitterMetadata?.twitter_username) {
+          console.log('Twitter already connected, redirecting to dashboard')
           router.push('/dashboard')
           return
         }
         
+        console.log('User authenticated and ready for Twitter linking')
         setUser(currentUser)
         setLoading(false)
       } catch (err) {
@@ -47,7 +65,7 @@ export default function TwitterLink() {
     }
     
     checkUserStatus()
-  }, [router])
+  }, [router, searchParams])
 
   const handleTwitterLink = async () => {
     setLinkLoading(true)
@@ -56,38 +74,49 @@ export default function TwitterLink() {
     try {
       const supabase = createClient()
       
+      // Define site URL without any trailing slashes
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      
+      console.log(`Starting Twitter OAuth with redirect to: ${siteUrl}/api/auth/twitter/callback`);
+      
       const { data, error: signInError } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+          redirectTo: `${siteUrl}/api/auth/twitter/callback`,
           scopes: 'tweet.read users.read offline.access',
         }
       })
       
       if (signInError) {
-        setError(signInError.message)
+        console.error('Twitter sign in error:', signInError.message);
+        setError(`Twitter authentication failed: ${signInError.message}`)
         setLinkLoading(false)
         return
       }
 
-      // The redirect happens automatically, but we'll add error handling
-      if (!data.url) {
-        setError('Failed to get authorization URL')
+      if (!data?.url) {
+        console.error('No URL returned from signInWithOAuth');
+        setError('Failed to get Twitter authorization URL')
         setLinkLoading(false)
         return
       }
-    } catch (err) {
+      
+      console.log('Redirecting to Twitter OAuth URL:', data.url);
+      window.location.href = data.url;
+    } catch (err: any) {
       console.error('Twitter link error:', err)
-      setError('Failed to start Twitter authentication. Please try again.')
+      setError(err?.message || 'Failed to start Twitter authentication. Please try again.')
       setLinkLoading(false)
     }
   }
 
   const handleSkip = () => {
+    console.log('User skipped Twitter linking, redirecting to dashboard')
     router.push('/dashboard')
   }
 
   const connectWallet = () => {
+    console.log('User chose wallet connection instead, redirecting')
     router.push('/auth/wallet-connect')
   }
 
@@ -134,9 +163,9 @@ export default function TwitterLink() {
               className="w-full py-3 px-4 bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 flex items-center justify-center"
             >
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085a4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
               </svg>
-              Connect with Twitter
+              {linkLoading ? 'Connecting...' : 'Connect with Twitter'}
             </button>
             
             <div className="text-center text-gray-500 dark:text-gray-400">OR</div>
@@ -146,7 +175,7 @@ export default function TwitterLink() {
               className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
             >
               <svg
-                className="w-5 h-5 mr-2"
+                className="w-5 h-5 mr-2 inline"
                 fill="currentColor"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
@@ -166,5 +195,20 @@ export default function TwitterLink() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function TwitterLink() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <TwitterLinkContent />
+    </Suspense>
   )
 } 

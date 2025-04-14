@@ -55,9 +55,13 @@ export async function middleware(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/api/debug') &&
     !request.nextUrl.pathname.startsWith('/api/setup-db') &&
     !request.nextUrl.pathname.startsWith('/api/update-wallet-address') &&
+    !request.nextUrl.pathname.startsWith('/api/zealy') &&
     !request.nextUrl.pathname.startsWith('/signup') &&
     request.nextUrl.pathname !== '/'
   ) {
+    // Debug logging for API route check
+    console.log('Redirecting to login from:', request.nextUrl.pathname);
+    
     // no user, redirect to login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
