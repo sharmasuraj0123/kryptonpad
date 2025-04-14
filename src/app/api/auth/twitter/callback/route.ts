@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
   try {
     // Get the code and error from the URL query parameters
     const requestUrl = new URL(req.url)
+    const origin = requestUrl.origin
     const code = requestUrl.searchParams.get('code')
     const error = requestUrl.searchParams.get('error')
     const errorDescription = requestUrl.searchParams.get('error_description')
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
     // If there was an error during the OAuth process, redirect to the Twitter link page with the error
     if (error || !code) {
       console.error('Twitter OAuth error:', { error, errorDescription })
-      const redirectUrl = new URL('/auth/twitter-link', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000')
+      const redirectUrl = new URL('/auth/twitter-link', origin)
       
       if (errorDescription) {
         redirectUrl.searchParams.set('error', encodeURIComponent(errorDescription))
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
     
     if (sessionError) {
       console.error('Error exchanging code for session:', sessionError)
-      const redirectUrl = new URL('/auth/twitter-link', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000')
+      const redirectUrl = new URL('/auth/twitter-link', origin)
       redirectUrl.searchParams.set('error', encodeURIComponent('Failed to authenticate with Twitter: ' + sessionError.message))
       return NextResponse.redirect(redirectUrl.toString())
     }
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest) {
     
     if (userError || !user) {
       console.error('Error getting user after session exchange:', userError)
-      const redirectUrl = new URL('/auth/twitter-link', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000')
+      const redirectUrl = new URL('/auth/twitter-link', origin)
       redirectUrl.searchParams.set('error', encodeURIComponent('Failed to retrieve user information'))
       return NextResponse.redirect(redirectUrl.toString())
     }
@@ -136,12 +137,12 @@ export async function GET(req: NextRequest) {
       console.log('Successfully updated user with Twitter information, redirecting to dashboard')
       
       // Redirect to the dashboard
-      return NextResponse.redirect(new URL('/dashboard', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').toString())
+      return NextResponse.redirect(new URL('/dashboard', origin).toString())
     } catch (error: any) {
       console.error('Error processing Twitter data:', error)
       
       // Redirect to the Twitter link page with the error
-      const redirectUrl = new URL('/auth/twitter-link', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000')
+      const redirectUrl = new URL('/auth/twitter-link', origin)
       redirectUrl.searchParams.set('error', encodeURIComponent(error.message || 'Failed to fetch Twitter user data'))
       return NextResponse.redirect(redirectUrl.toString())
     }
@@ -149,7 +150,7 @@ export async function GET(req: NextRequest) {
     console.error('Unexpected error in Twitter callback:', error)
     
     // Final fallback - redirect to the Twitter link page with a generic error
-    const redirectUrl = new URL('/auth/twitter-link', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000')
+    const redirectUrl = new URL('/auth/twitter-link', new URL(req.url).origin)
     redirectUrl.searchParams.set('error', encodeURIComponent('An unexpected error occurred. Please try again.'))
     return NextResponse.redirect(redirectUrl.toString())
   }
