@@ -40,6 +40,14 @@ export default function LoginForm() {
       console.log('Attempting to sign in with Supabase')
       const supabase = createClient()
 
+      // Set local storage flag for remember me immediately
+      if (formData.rememberMe) {
+        localStorage.setItem('rememberMe', 'true')
+      } else {
+        localStorage.removeItem('rememberMe')
+      }
+
+      // Sign in with basic auth - we're relying on the persistence settings in supabase-browser.ts
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password
@@ -51,13 +59,6 @@ export default function LoginForm() {
         setError(signInError.message)
         setLoading(false)
         return
-      }
-
-      // Set local storage flag for remember me (to be used for auto-login)
-      if (formData.rememberMe) {
-        localStorage.setItem('rememberMe', 'true')
-      } else {
-        localStorage.removeItem('rememberMe')
       }
 
       console.log('Login successful, redirecting to dashboard')

@@ -41,6 +41,14 @@ export async function middleware(request: NextRequest) {
   console.log('Middleware - User status:', user ? 'Authenticated' : 'Not authenticated')
   if (user) {
     console.log('User has wallet address:', !!user.user_metadata?.wallet_address)
+    
+    // If user is already authenticated and trying to access login page, redirect to dashboard
+    if (request.nextUrl.pathname === '/login') {
+      console.log('User already logged in, redirecting from login to dashboard')
+      const dashboardUrl = request.nextUrl.clone()
+      dashboardUrl.pathname = '/dashboard'
+      return NextResponse.redirect(dashboardUrl)
+    }
   }
 
   // URL for debugging

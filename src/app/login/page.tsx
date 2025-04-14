@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import LoginForm from '@/components/auth/LoginForm';
+import { createClient } from '@/utils/supabase-browser';
 import { supabase } from '@/utils/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -13,11 +14,31 @@ export default function Login() {
   useEffect(() => {
     async function checkAuthStatus() {
       try {
+        // Create a client that will use our persistence settings
+        const supabase = createClient();
+        
+        // Try to get the user - this will try to refresh the session if needed
         const { data: { user }, error } = await supabase.auth.getUser();
         
         if (user && !error) {
-          // User is logged in, redirect to dashboard
+          console.log('User is already logged in, redirecting to dashboard');
           router.replace('/dashboard');
+        } else {
+          // If no valid session but remember me was set, try once more with session refresh
+          const rememberMe = typeof window !== 'undefined' && localStorage.getItem('rememberMe') === 'true';
+          if (rememberMe) {
+            console.log('Attempting to refresh session for remembered user');
+            const { data: refreshData } = await supabase.auth.refreshSession();
+            
+            if (refreshData.session) {
+              console.log('Session refreshed successfully, redirecting to dashboard');
+              router.replace('/dashboard');
+            } else {
+              // Clear remember me if session refresh failed
+              localStorage.removeItem('rememberMe');
+              console.log('Could not refresh session');
+            }
+          }
         }
       } catch (err) {
         console.error('Error checking auth status:', err);
